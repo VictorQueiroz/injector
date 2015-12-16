@@ -19,7 +19,7 @@ describe('Injector', function() {
 	describe('constructor', function(){
 		describe('deps()', function() {
 			it('should get dependencies from an anonymous function', function() {
-				expect(Injector.deps(serviceFn)).toEqual(['Q', '$', 'parse', 'scope']);
+				expect(Injector.extractDeps(serviceFn)).toEqual(['Q', '$', 'parse', 'scope']);
 			});
 
 			it('should get dependencies from a named function', function() {
@@ -27,11 +27,11 @@ describe('Injector', function() {
 					return 0;					
 				}
 
-				expect(Injector.deps(namedFunction)).toEqual(['Q', '$', 'parse', 'scope']);
+				expect(Injector.extractDeps(namedFunction)).toEqual(['Q', '$', 'parse', 'scope']);
 			});
 
 			it('should return empty array when no dependecy is found', function() {
-				expect(Injector.deps(function() {})).toEqual([]);
+				expect(Injector.extractDeps(function() {})).toEqual([]);
 			});
 		});
 
@@ -61,6 +61,18 @@ describe('Injector', function() {
 
 		beforeEach(function() {
 			extend(pending, {
+				q: function() {
+					return function(callback) {
+						callback(function() {});
+
+						return {
+							then: function(fn) {
+								fn(0);
+							}
+						}
+					};
+				},
+
 				independentModule: function() {
 					return {
 						sum: function(v, f) {
@@ -69,23 +81,23 @@ describe('Injector', function() {
 					};
 				},
 
-				anotherModuleHere: function(independentModule) {
+				anotherModuleHere: ['independentModule', function(independentModule) {
 					return function(v) {
 						return independentModule.sum(v * 2, 4);
 					};
-				},
+				}],
 
-				someModuleHere: function(anotherModuleHere) {
+				someModuleHere: ['anotherModuleHere', function(anotherModuleHere) {
 					return anotherModuleHere(8);
-				},
+				}],
 
-				circularModule: function(circular) {
+				circularModule: ['circular', function(circular) {
 					return { isCircular: circular };
-				},
+				}],
 
-				circular: function(circularModule) {
+				circular: ['circularModule', function(circularModule) {
 					return true;
-				}
+				}]
 			});
 		});
 
@@ -103,11 +115,11 @@ describe('Injector', function() {
 		});
 
 		it('should get array annotated services', function() {
-			pending.dep1 = function() {
+			pending.dep1 = [function() {
 				return function() {
 					return 1;
 				};
-			};
+			}];
 
 			pending.arrayNotated = ['dep1', function(dep){
 				return dep();
@@ -126,6 +138,32 @@ describe('Injector', function() {
 			};
 
 			expect(circularFn).toThrow(new Error('Circular dependency found: circular <- circularModule <- circular'));
+		});
+
+		it('should not allow entire dependencies array notation, the last item of the array must be the service factory', function() {
+			var allDepsFn = function() {
+				injector.invoke(['dep1', 'dep2', 'dep3']);
+			};
+
+			expect(allDepsFn).toThrow(new Error('The last item of the array must be the service factory'));
+		});
+
+		it('should support $inject key on the service factory', function() {
+			var thenSpy = jasmine.createSpy();
+
+			var factoryFn = function($q) {
+				var i = 0;
+
+				return $q(function(resolve) {
+					resolve(i);
+				});
+			};
+
+			factoryFn.$inject = ['q'];
+
+			injector.invoke(factoryFn).then(thenSpy);
+
+			expect(thenSpy).toHaveBeenCalledWith(0);
 		});
 	});
 });
