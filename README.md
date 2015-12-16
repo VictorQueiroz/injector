@@ -1,7 +1,7 @@
 # injector
 
 ### Usage
-```
+```js
 // Not loaded module
 var pending = {
   $q: function() {
