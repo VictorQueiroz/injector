@@ -1,0 +1,3 @@
+window.injector = {
+	Injector: Injector
+};
