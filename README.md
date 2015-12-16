@@ -2,7 +2,7 @@
 
 ### Usage
 ```js
-// Not loaded module
+// Not loaded modules
 var pending = {
   $q: function() {
     return window.Q;
