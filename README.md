@@ -49,3 +49,9 @@ var promise = injector.invoke(function($q, injector){
   return deferred.promise;
 });
 ```
+
+
+### Installation
+```
+bower install --save injection
+```
