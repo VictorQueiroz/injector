@@ -35,4 +35,17 @@ var cache = {
 };
 
 var injector = new injector.Injector(pending, cache);
+
+var promise = injector.invoke(function($q, injector){
+  var $http = injector.get('$http');
+  var deferred = $q.defer();
+  
+  $http.get('/api/products').then(function(data){
+    deferred.resolve();
+  }, function(err) {
+    deferred.reject(err);
+  });
+  
+  return deferred.promise;
+});
 ```
