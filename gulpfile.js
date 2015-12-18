@@ -6,7 +6,7 @@ var wrapper = require('gulp-wrapper');
 gulp.task('build', function() {
 	gulp.src([
 		'src/Injector.js',
-		'src/injector.js'
+		'src/exports.js'
 	])
 	.pipe(concat('injector.js'))
 	.pipe(wrapper({
