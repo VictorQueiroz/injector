@@ -59,6 +59,12 @@ function Injector(pending, cache) {
 }
 
 Injector.prototype = {
+  // Check if a service exists inside
+  // pending or cache map
+  has: function(name) {
+    return this.pending.hasOwnProperty(name) || this.cache.hasOwnProperty(name);
+  },
+
 	get: function(name) {
 		if(name == INJECTOR_MODULE_NAME) {
 			return this;

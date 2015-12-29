@@ -7,7 +7,7 @@ describe('Injector', function() {
 	beforeEach(function() {
 		cache = {};
 		pending = {};
-		injector = new Injector(pending);
+		injector = new Injector(pending, cache);
 
 		serviceFn = function(Q, $, parse, scope) {
 			return function(exp) {
@@ -24,7 +24,7 @@ describe('Injector', function() {
 
 			it('should get dependencies from a named function', function() {
 				function namedFunction (Q, $, parse, scope){
-					return 0;					
+					return 0;
 				}
 
 				expect(Injector.extractDeps(namedFunction)).toEqual(['Q', '$', 'parse', 'scope']);
@@ -166,4 +166,22 @@ describe('Injector', function() {
 			expect(thenSpy).toHaveBeenCalledWith(0);
 		});
 	});
+
+  describe('has()', function() {
+    it('should check if a service exists inside pending or cache map', function() {
+      expect(injector.has('anyModuleHere')).not.toBeTruthy();
+
+      pending.anyModuleHere = function() {};
+
+      expect(injector.has('anyModuleHere')).toBeTruthy();
+
+      delete pending.anyModuleHere;
+
+      expect(injector.has('anyModuleHere')).not.toBeTruthy();
+
+      cache.anyModuleHere = function() {};
+
+      expect(injector.has('anyModuleHere')).toBeTruthy();
+    });
+  });
 });
