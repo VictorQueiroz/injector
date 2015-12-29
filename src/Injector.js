@@ -55,7 +55,7 @@ var INJECTOR_MODULE_NAME = 'injector';
 function Injector(pending, cache) {
 	this.path = [];
 	this.cache = cache || {};
-	this.pending = pending;
+	this.pending = pending || {};
 }
 
 Injector.prototype = {
